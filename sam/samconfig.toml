@@ -1,0 +1,13 @@
+version = 0.1
+
+[default]
+[default.global.parameters]
+stack_name = "coffee-zip"
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+region = "ap-northeast-2"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "coffee-zip"
+image_repositories = []
