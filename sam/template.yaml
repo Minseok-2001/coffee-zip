@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CoffeeZip API - Quarkus Lambda
+
+Parameters:
+  DbUrl:
+    Type: String
+    Description: JDBC URL for the database
+  DbUsername:
+    Type: String
+    Description: Database username
+  DbPassword:
+    Type: String
+    Description: Database password
+    NoEcho: true
+  JwtIssuer:
+    Type: String
+    Description: JWT issuer URL
+    Default: https://coffeezip.app
+  GoogleClientId:
+    Type: String
+    Description: Google OAuth2 client ID
+  GoogleClientSecret:
+    Type: String
+    Description: Google OAuth2 client secret
+    NoEcho: true
+  KakaoClientId:
+    Type: String
+    Description: Kakao OAuth2 client ID
+  KakaoClientSecret:
+    Type: String
+    Description: Kakao OAuth2 client secret
+    NoEcho: true
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: provided.al2023
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        QUARKUS_LAMBDA_HANDLER: aws
+        DB_URL: !Ref DbUrl
+        DB_USERNAME: !Ref DbUsername
+        DB_PASSWORD: !Ref DbPassword
+        JWT_ISSUER: !Ref JwtIssuer
+        GOOGLE_CLIENT_ID: !Ref GoogleClientId
+        GOOGLE_CLIENT_SECRET: !Ref GoogleClientSecret
+        KAKAO_CLIENT_ID: !Ref KakaoClientId
+        KAKAO_CLIENT_SECRET: !Ref KakaoClientSecret
+
+Resources:
+  CoffeeZipApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - https://coffee-zip.vercel.app
+          - http://localhost:3000
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+
+  CoffeeZipFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../build/function.zip
+      Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
+      Events:
+        HttpApiProxyEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CoffeeZipApi
+            Path: /{proxy+}
+            Method: ANY
+        HttpApiRootEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CoffeeZipApi
+            Path: /
+            Method: ANY
+
+Outputs:
+  ApiEndpoint:
+    Description: HTTP API Gateway endpoint URL
+    Value: !Sub "https://${CoffeeZipApi}.execute-api.${AWS::Region}.amazonaws.com"
+  FunctionArn:
+    Description: CoffeeZip Lambda Function ARN
+    Value: !GetAtt CoffeeZipFunction.Arn
