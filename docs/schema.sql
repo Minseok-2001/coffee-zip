@@ -1,17 +1,17 @@
--- CoffeeZip MySQL Schema
+-- CoffeeZip MySQL Schema (no FK constraints, singular table names)
 
-CREATE TABLE IF NOT EXISTS users (
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    provider     VARCHAR(20)  NOT NULL COMMENT 'google | kakao',
-    provider_id  VARCHAR(255) NOT NULL,
-    email        VARCHAR(255),
-    nickname     VARCHAR(100) NOT NULL,
+CREATE TABLE IF NOT EXISTS user (
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    provider      VARCHAR(20)  NOT NULL COMMENT 'google | kakao',
+    provider_id   VARCHAR(255) NOT NULL,
+    email         VARCHAR(255),
+    nickname      VARCHAR(100) NOT NULL,
     profile_image VARCHAR(500),
-    created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_provider (provider, provider_id)
 );
 
-CREATE TABLE IF NOT EXISTS recipes (
+CREATE TABLE IF NOT EXISTS recipe (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id      BIGINT       NOT NULL,
     title        VARCHAR(200) NOT NULL,
@@ -28,47 +28,40 @@ CREATE TABLE IF NOT EXISTS recipes (
     is_public    BOOLEAN      NOT NULL DEFAULT TRUE,
     like_count   INT          NOT NULL DEFAULT 0,
     created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    updated_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS recipe_steps (
+CREATE TABLE IF NOT EXISTS recipe_step (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     recipe_id    BIGINT       NOT NULL,
     step_order   INT          NOT NULL,
     label        VARCHAR(200) NOT NULL,
     duration     INT          NOT NULL COMMENT '초',
-    water_amount INT          COMMENT 'ml',
-    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+    water_amount INT          COMMENT 'ml'
 );
 
-CREATE TABLE IF NOT EXISTS recipe_tags (
+CREATE TABLE IF NOT EXISTS recipe_tag (
     recipe_id    BIGINT      NOT NULL,
     tag          VARCHAR(50) NOT NULL,
-    PRIMARY KEY (recipe_id, tag),
-    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE
+    PRIMARY KEY (recipe_id, tag)
 );
 
-CREATE TABLE IF NOT EXISTS recipe_likes (
+CREATE TABLE IF NOT EXISTS recipe_like (
     recipe_id    BIGINT   NOT NULL,
     user_id      BIGINT   NOT NULL,
     created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (recipe_id, user_id),
-    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id)   REFERENCES users(id)
+    PRIMARY KEY (recipe_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS recipe_comments (
+CREATE TABLE IF NOT EXISTS recipe_comment (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    recipe_id    BIGINT NOT NULL,
-    user_id      BIGINT NOT NULL,
-    content      TEXT   NOT NULL,
-    created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id)   REFERENCES users(id)
+    recipe_id    BIGINT   NOT NULL,
+    user_id      BIGINT   NOT NULL,
+    content      TEXT     NOT NULL,
+    created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS daily_notes (
+CREATE TABLE IF NOT EXISTS daily_note (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id      BIGINT NOT NULL,
     note_date    DATE   NOT NULL,
@@ -77,20 +70,15 @@ CREATE TABLE IF NOT EXISTS daily_notes (
     recipe_id    BIGINT,
     created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_user_date (user_id, note_date),
-    FOREIGN KEY (user_id)   REFERENCES users(id),
-    FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE SET NULL
+    UNIQUE KEY uq_user_date (user_id, note_date)
 );
 
-CREATE TABLE IF NOT EXISTS timer_logs (
+CREATE TABLE IF NOT EXISTS timer_log (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id      BIGINT       NOT NULL,
     note_id      BIGINT,
     recipe_id    BIGINT       NOT NULL,
     recipe_name  VARCHAR(200) NOT NULL,
     started_at   DATETIME     NOT NULL,
-    completed_at DATETIME,
-    FOREIGN KEY (user_id)  REFERENCES users(id),
-    FOREIGN KEY (note_id)  REFERENCES daily_notes(id) ON DELETE SET NULL,
-    FOREIGN KEY (recipe_id) REFERENCES recipes(id)
+    completed_at DATETIME
 );
