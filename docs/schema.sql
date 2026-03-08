@@ -1,6 +1,6 @@
 -- CoffeeZip MySQL Schema (no FK constraints, singular table names)
 
-CREATE TABLE IF NOT EXISTS user (
+CREATE TABLE IF NOT EXISTS member (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
     provider      VARCHAR(20)  NOT NULL COMMENT 'google | kakao',
     provider_id   VARCHAR(255) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS user (
 
 CREATE TABLE IF NOT EXISTS recipe (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id      BIGINT       NOT NULL,
+    member_id    BIGINT       NOT NULL,
     title        VARCHAR(200) NOT NULL,
     description  TEXT,
     coffee_bean  VARCHAR(200),
@@ -48,34 +48,34 @@ CREATE TABLE IF NOT EXISTS recipe_tag (
 
 CREATE TABLE IF NOT EXISTS recipe_like (
     recipe_id    BIGINT   NOT NULL,
-    user_id      BIGINT   NOT NULL,
+    member_id    BIGINT   NOT NULL,
     created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (recipe_id, user_id)
+    PRIMARY KEY (recipe_id, member_id)
 );
 
 CREATE TABLE IF NOT EXISTS recipe_comment (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     recipe_id    BIGINT   NOT NULL,
-    user_id      BIGINT   NOT NULL,
+    member_id    BIGINT   NOT NULL,
     content      TEXT     NOT NULL,
     created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS daily_note (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id      BIGINT NOT NULL,
+    member_id    BIGINT NOT NULL,
     note_date    DATE   NOT NULL,
     content      TEXT,
     rating       INT    COMMENT '1~5',
-    recipe_id    BIGINT,
     created_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_user_date (user_id, note_date)
+    UNIQUE KEY uq_member_date (member_id, note_date)
 );
 
+-- 타이머 로그가 노트-레시피 연결을 담당 (하루 여러 레시피 대응)
 CREATE TABLE IF NOT EXISTS timer_log (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id      BIGINT       NOT NULL,
+    member_id    BIGINT       NOT NULL,
     note_id      BIGINT,
     recipe_id    BIGINT       NOT NULL,
     recipe_name  VARCHAR(200) NOT NULL,
