@@ -1,14 +1,21 @@
 package org.coffeezip.entity
 
-import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntity
+import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "member")
-class Member : PanacheEntity() {
+class Member : PanacheEntityBase {
+
+    @get:Id
+    @get:GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null
 
     @get:Column(nullable = false, length = 20)
     var provider: String = ""
