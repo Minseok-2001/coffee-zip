@@ -46,7 +46,7 @@ class RecipeService {
             waterGrams = req.waterGrams
             waterTemp = req.waterTemp
             targetYield = req.targetYield
-            isPublic = req.isPublic
+            publishedAt = if (req.isPublic) java.time.LocalDateTime.now() else null
             likeCount = 0
         }
         em.persist(recipe)
@@ -104,7 +104,7 @@ class RecipeService {
         recipe.waterGrams = req.waterGrams
         recipe.waterTemp = req.waterTemp
         recipe.targetYield = req.targetYield
-        recipe.isPublic = req.isPublic
+        recipe.publishedAt = if (req.isPublic) (recipe.publishedAt ?: java.time.LocalDateTime.now()) else null
         recipe.updatedAt = java.time.LocalDateTime.now()
 
         em.createQuery("DELETE FROM RecipeStep s WHERE s.recipeId = :recipeId")
@@ -237,7 +237,7 @@ class RecipeService {
             waterGrams = recipe.waterGrams,
             waterTemp = recipe.waterTemp,
             targetYield = recipe.targetYield,
-            isPublic = recipe.isPublic,
+            publishedAt = recipe.publishedAt?.toString(),
             likeCount = recipe.likeCount,
             steps = resolvedSteps,
             tags = resolvedTags,
