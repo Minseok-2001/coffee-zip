@@ -17,7 +17,7 @@ class RecipeRepository {
     fun findPublicFeed(cursor: Long?, limit: Int): List<Recipe> {
         val jpql = """
             SELECT r FROM Recipe r
-            WHERE r.isPublic = true AND (:cursor IS NULL OR r.id < :cursor)
+            WHERE r.publishedAt IS NOT NULL AND (:cursor IS NULL OR r.id < :cursor)
             ORDER BY r.id DESC
         """.trimIndent()
         return em.createQuery(jpql, Recipe::class.java)

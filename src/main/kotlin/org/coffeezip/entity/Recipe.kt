@@ -1,14 +1,21 @@
 package org.coffeezip.entity
 
-import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntity
+import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntityBase
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "recipe")
-class Recipe : PanacheEntity() {
+class Recipe : PanacheEntityBase {
+
+    @get:Id
+    @get:GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null
 
     @get:Column(name = "member_id", nullable = false)
     var memberId: Long = 0
@@ -46,8 +53,8 @@ class Recipe : PanacheEntity() {
     @get:Column(name = "target_yield")
     var targetYield: Int? = null
 
-    @get:Column(name = "is_public", nullable = false)
-    var isPublic: Boolean = true
+    @get:Column(name = "published_at")
+    var publishedAt: LocalDateTime? = LocalDateTime.now()
 
     @get:Column(name = "like_count", nullable = false)
     var likeCount: Int = 0
