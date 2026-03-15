@@ -13,7 +13,6 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "daily_note")
 class DailyNote : PanacheEntityBase {
-
     @get:Id
     @get:GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
