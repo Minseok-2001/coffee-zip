@@ -15,13 +15,19 @@ import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
 import org.coffeezip.entity.Member
 
-data class OAuthCallbackRequest(val code: String)
-data class RefreshRequest(val refreshToken: String)
+data class OAuthCallbackRequest(
+    val code: String,
+)
+
+data class RefreshRequest(
+    val refreshToken: String,
+)
+
 data class TokenResponse(
     val accessToken: String,
     val refreshToken: String,
     val memberId: Long,
-    val nickname: String
+    val nickname: String,
 )
 
 @Path("/auth")
@@ -29,7 +35,6 @@ data class TokenResponse(
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 class AuthResource {
-
     @Inject
     lateinit var jwtService: JwtService
 
@@ -51,32 +56,27 @@ class AuthResource {
     }
 
     @POST
-    @Path("/kakao/callback")
-    @Transactional
-    fun kakaoCallback(request: OAuthCallbackRequest): TokenResponse {
-        val userInfo = oAuthService.exchangeKakaoCode(request.code)
-        return processOAuthLogin(userInfo)
-    }
-
-    @POST
     @Path("/refresh")
     fun refresh(request: RefreshRequest): TokenResponse {
-        val jwt = try {
-            jwtParser.parse(request.refreshToken)
-        } catch (e: Exception) {
-            throw WebApplicationException(Response.status(401).entity("Invalid refresh token").build())
-        }
+        val jwt =
+            try {
+                jwtParser.parse(request.refreshToken)
+            } catch (e: Exception) {
+                throw WebApplicationException(Response.status(401).entity("Invalid refresh token").build())
+            }
 
         val tokenType = jwt.getClaim<String>("type")
         if (tokenType != "refresh") {
             throw WebApplicationException(Response.status(401).entity("Not a refresh token").build())
         }
 
-        val memberId = jwt.subject?.toLongOrNull()
-            ?: throw WebApplicationException(Response.status(401).entity("Invalid token subject").build())
+        val memberId =
+            jwt.subject?.toLongOrNull()
+                ?: throw WebApplicationException(Response.status(401).entity("Invalid token subject").build())
 
-        val member = entityManager.find(Member::class.java, memberId)
-            ?: throw WebApplicationException(Response.status(404).entity("Member not found").build())
+        val member =
+            entityManager.find(Member::class.java, memberId)
+                ?: throw WebApplicationException(Response.status(404).entity("Member not found").build())
 
         val accessToken = jwtService.generateAccessToken(member.id!!, member.nickname)
         val refreshToken = jwtService.generateRefreshToken(member.id!!)
@@ -85,7 +85,7 @@ class AuthResource {
             accessToken = accessToken,
             refreshToken = refreshToken,
             memberId = member.id!!,
-            nickname = member.nickname
+            nickname = member.nickname,
         )
     }
 
@@ -97,29 +97,29 @@ class AuthResource {
             accessToken = accessToken,
             refreshToken = refreshToken,
             memberId = member.id!!,
-            nickname = member.nickname
+            nickname = member.nickname,
         )
     }
 
-    private fun findOrCreateMember(userInfo: OAuthUserInfo): Member {
-        return try {
-            entityManager.createQuery(
-                "SELECT m FROM Member m WHERE m.provider = :provider AND m.providerId = :providerId",
-                Member::class.java
-            )
-                .setParameter("provider", userInfo.provider)
+    private fun findOrCreateMember(userInfo: OAuthUserInfo): Member =
+        try {
+            entityManager
+                .createQuery(
+                    "SELECT m FROM Member m WHERE m.provider = :provider AND m.providerId = :providerId",
+                    Member::class.java,
+                ).setParameter("provider", userInfo.provider)
                 .setParameter("providerId", userInfo.providerId)
                 .singleResult
         } catch (e: NoResultException) {
-            val newMember = Member().apply {
-                provider = userInfo.provider
-                providerId = userInfo.providerId
-                email = userInfo.email
-                nickname = userInfo.nickname
-                profileImage = userInfo.profileImage
-            }
+            val newMember =
+                Member().apply {
+                    provider = userInfo.provider
+                    providerId = userInfo.providerId
+                    email = userInfo.email
+                    nickname = userInfo.nickname
+                    profileImage = userInfo.profileImage
+                }
             entityManager.persist(newMember)
             newMember
         }
-    }
 }
