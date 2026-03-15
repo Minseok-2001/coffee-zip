@@ -5,6 +5,8 @@ import jakarta.inject.Inject
 import jakarta.persistence.EntityManager
 import jakarta.transaction.Transactional
 import jakarta.ws.rs.WebApplicationException
+import org.coffeezip.bean.BeanService
+import org.coffeezip.dto.BeanSummaryResponse
 import org.coffeezip.entity.Recipe
 import org.coffeezip.entity.RecipeComment
 import org.coffeezip.entity.RecipeLike
@@ -20,13 +22,20 @@ class RecipeService {
     @Inject
     lateinit var em: EntityManager
 
+    @Inject
+    lateinit var beanService: BeanService
+
     fun getFeed(cursor: Long?, limit: Int, method: String? = null): FeedResponse {
         val results = recipeRepository.findPublicFeed(cursor, limit + 1, method)
         val hasNext = results.size > limit
         val items = if (hasNext) results.dropLast(1) else results
         val nextCursor = if (hasNext) items.last().id else null
+        val beanIds = items.mapNotNull { it.beanId }
+        val beanMap: Map<Long, BeanSummaryResponse> =
+            if (beanIds.isEmpty()) emptyMap()
+            else beanService.getBeanSummaries(beanIds)
         return FeedResponse(
-            items = items.map { toRecipeResponse(it) },
+            items = items.map { toRecipeResponse(it, bean = beanMap[it.beanId]) },
             nextCursor = nextCursor
         )
     }
@@ -41,6 +50,7 @@ class RecipeService {
             coffeeBean = req.coffeeBean
             origin = req.origin
             roastLevel = req.roastLevel
+            beanId = req.beanId
             grinder = req.grinder
             grindSize = req.grindSize
             coffeeGrams = req.coffeeGrams
@@ -73,6 +83,7 @@ class RecipeService {
         }
 
         em.flush()
+        val bean = req.beanId?.let { beanService.getBeanSummaries(listOf(it))[it] }
         return toRecipeResponse(recipe, req.steps.mapIndexed { _, stepReq ->
             RecipeStepResponse(
                 id = 0L,
@@ -81,12 +92,13 @@ class RecipeService {
                 duration = stepReq.duration,
                 waterAmount = stepReq.waterAmount
             )
-        }, req.tags)
+        }, req.tags, bean = bean)
     }
 
     fun getRecipe(id: Long): RecipeResponse {
         val recipe = em.find(Recipe::class.java, id) ?: throw WebApplicationException(404)
-        return toRecipeResponse(recipe)
+        val bean = recipe.beanId?.let { beanService.getBeanSummaries(listOf(it))[it] }
+        return toRecipeResponse(recipe, bean = bean)
     }
 
     @Transactional
@@ -100,6 +112,7 @@ class RecipeService {
         recipe.coffeeBean = req.coffeeBean
         recipe.origin = req.origin
         recipe.roastLevel = req.roastLevel
+        recipe.beanId = req.beanId
         recipe.grinder = req.grinder
         recipe.grindSize = req.grindSize
         recipe.coffeeGrams = req.coffeeGrams
@@ -136,7 +149,8 @@ class RecipeService {
         }
 
         em.flush()
-        return toRecipeResponse(recipe)
+        val bean = recipe.beanId?.let { beanService.getBeanSummaries(listOf(it))[it] }
+        return toRecipeResponse(recipe, bean = bean)
     }
 
     @Transactional
@@ -207,13 +221,19 @@ class RecipeService {
     }
 
     fun getMyRecipes(memberId: Long): List<RecipeResponse> {
-        return recipeRepository.findByMemberId(memberId).map { toRecipeResponse(it) }
+        val recipes = recipeRepository.findByMemberId(memberId)
+        val beanIds = recipes.mapNotNull { it.beanId }
+        val beanMap: Map<Long, BeanSummaryResponse> =
+            if (beanIds.isEmpty()) emptyMap()
+            else beanService.getBeanSummaries(beanIds)
+        return recipes.map { toRecipeResponse(it, bean = beanMap[it.beanId]) }
     }
 
     private fun toRecipeResponse(
         recipe: Recipe,
         steps: List<RecipeStepResponse>? = null,
-        tags: List<String>? = null
+        tags: List<String>? = null,
+        bean: BeanSummaryResponse? = null
     ): RecipeResponse {
         val resolvedSteps = steps ?: recipeRepository.findStepsByRecipeId(recipe.id!!).map {
             RecipeStepResponse(
@@ -245,7 +265,9 @@ class RecipeService {
             steps = resolvedSteps,
             tags = resolvedTags,
             createdAt = recipe.createdAt.toString(),
-            updatedAt = recipe.updatedAt.toString()
+            updatedAt = recipe.updatedAt.toString(),
+            beanId = recipe.beanId,
+            bean = bean
         )
     }
 
