@@ -1,2 +1,0 @@
-[     444ms] [ERROR] Access to fetch at 'http://localhost:8080/calendar?year=2026&month=3' from origin 'http://localhost:3000' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:3000/calendar:0
-[     445ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:8080/calendar?year=2026&month=3:0
