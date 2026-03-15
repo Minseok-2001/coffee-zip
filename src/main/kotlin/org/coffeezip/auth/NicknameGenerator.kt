@@ -20,7 +20,6 @@ object NicknameGenerator {
     fun generate(): String {
         val adj = adjectives.random()
         val animal = animals.random()
-        val number = (10..99).random()
-        return "$adj $animal$number"
+        return "$adj $animal"
     }
 }
