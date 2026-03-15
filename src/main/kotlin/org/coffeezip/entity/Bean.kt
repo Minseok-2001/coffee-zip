@@ -12,8 +12,13 @@ class Bean : PanacheEntityBase {
     @get:GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null
 
+    @get:Column(nullable = false)
     var name: String = ""
+
+    @get:Column(nullable = false)
     var roastery: String = ""
+
+    @get:Column(nullable = false)
     var origin: String = ""
     var region: String? = null
     var farm: String? = null
@@ -33,14 +38,14 @@ class Bean : PanacheEntityBase {
     @get:ElementCollection(fetch = FetchType.EAGER)
     @get:CollectionTable(name = "bean_flavor_note", joinColumns = [JoinColumn(name = "bean_id")])
     @get:Column(name = "note", length = 50)
-    var flavorNotes: MutableList<String> = mutableListOf()
+    var flavorNotes: MutableSet<String> = mutableSetOf()
 
-    @get:Column(name = "created_by")
+    @get:Column(name = "created_by", nullable = false)
     var createdBy: Long = 0
 
-    @get:Column(name = "created_at")
+    @get:Column(name = "created_at", nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()
 
-    @get:Column(name = "updated_at")
+    @get:Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
 }

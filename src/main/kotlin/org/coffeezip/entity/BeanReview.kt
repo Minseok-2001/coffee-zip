@@ -31,9 +31,9 @@ class BeanReview : PanacheEntityBase {
     var body: Int? = null
     var aroma: Int? = null
 
-    @get:Column(name = "created_at")
+    @get:Column(name = "created_at", nullable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()
 
-    @get:Column(name = "updated_at")
+    @get:Column(name = "updated_at", nullable = false)
     var updatedAt: LocalDateTime = LocalDateTime.now()
 }
