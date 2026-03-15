@@ -88,6 +88,7 @@ class BeanService {
     fun updateBean(beanId: Long, request: UpdateBeanRequest, memberId: Long): BeanDetailResponse {
         val bean = em.find(Bean::class.java, beanId)
             ?: throw NotFoundException("Bean not found: $beanId")
+        if (bean.createdBy != memberId) throw jakarta.ws.rs.WebApplicationException(403)
         request.name?.let { bean.name = it }
         request.roastery?.let { bean.roastery = it }
         request.origin?.let { bean.origin = it }
@@ -119,6 +120,7 @@ class BeanService {
             existing.body = request.body
             existing.aroma = request.aroma
             existing.updatedAt = LocalDateTime.now()
+            em.flush()
             existing
         } else {
             val newReview = BeanReview().apply {
@@ -144,7 +146,7 @@ class BeanService {
     fun deleteReview(beanId: Long, memberId: Long) {
         val review = beanRepository.findReviewByBeanAndMember(beanId, memberId)
             ?: throw NotFoundException("Review not found for bean $beanId and member $memberId")
-        em.remove(em.contains(review).let { if (it) review else em.merge(review) })
+        em.remove(review)
     }
 
     fun getReviews(beanId: Long, page: Int, size: Int): List<BeanReviewResponse> {
