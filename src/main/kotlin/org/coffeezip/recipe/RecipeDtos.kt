@@ -10,6 +10,7 @@ data class RecipeStepRequest(
 data class CreateRecipeRequest(
     val title: String,
     val description: String?,
+    val method: String?,
     val coffeeBean: String?,
     val origin: String?,
     val roastLevel: String?,
@@ -27,6 +28,7 @@ data class CreateRecipeRequest(
 data class UpdateRecipeRequest(
     val title: String,
     val description: String?,
+    val method: String?,
     val coffeeBean: String?,
     val origin: String?,
     val roastLevel: String?,
@@ -54,6 +56,7 @@ data class RecipeResponse(
     val memberId: Long,
     val title: String,
     val description: String?,
+    val method: String?,
     val coffeeBean: String?,
     val origin: String?,
     val roastLevel: String?,

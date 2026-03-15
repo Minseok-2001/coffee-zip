@@ -27,9 +27,10 @@ class RecipeResource {
     @GET
     fun getFeed(
         @QueryParam("cursor") cursor: Long?,
-        @QueryParam("limit") @DefaultValue("20") limit: Int
+        @QueryParam("limit") @DefaultValue("20") limit: Int,
+        @QueryParam("method") method: String?
     ): FeedResponse {
-        return recipeService.getFeed(cursor, limit)
+        return recipeService.getFeed(cursor, limit, method)
     }
 
     @POST
