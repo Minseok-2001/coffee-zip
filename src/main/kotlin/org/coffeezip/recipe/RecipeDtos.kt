@@ -63,7 +63,7 @@ data class RecipeResponse(
     val waterGrams: Double?,
     val waterTemp: Int?,
     val targetYield: Int?,
-    val isPublic: Boolean,
+    val publishedAt: String?,
     val likeCount: Int,
     val steps: List<RecipeStepResponse>,
     val tags: List<String>,

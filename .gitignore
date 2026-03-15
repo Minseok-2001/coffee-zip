@@ -42,3 +42,9 @@ nb-configuration.xml
 
 # Git worktrees
 .worktrees/
+.playwright-mcp/
+*.png
+*.mp4
+src/main/resources/privateKey_pkcs1_backup.pem
+src/main/resources/privateKey.pem
+src/main/resources/publicKey.pem
