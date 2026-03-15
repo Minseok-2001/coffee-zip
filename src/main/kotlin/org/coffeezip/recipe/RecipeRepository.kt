@@ -14,14 +14,17 @@ class RecipeRepository {
     @Inject
     lateinit var em: EntityManager
 
-    fun findPublicFeed(cursor: Long?, limit: Int): List<Recipe> {
+    fun findPublicFeed(cursor: Long?, limit: Int, method: String? = null): List<Recipe> {
         val jpql = """
             SELECT r FROM Recipe r
-            WHERE r.publishedAt IS NOT NULL AND (:cursor IS NULL OR r.id < :cursor)
+            WHERE r.publishedAt IS NOT NULL
+              AND (:cursor IS NULL OR r.id < :cursor)
+              AND (:method IS NULL OR r.method = :method)
             ORDER BY r.id DESC
         """.trimIndent()
         return em.createQuery(jpql, Recipe::class.java)
             .setParameter("cursor", cursor)
+            .setParameter("method", method)
             .setMaxResults(limit)
             .resultList
     }

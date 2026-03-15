@@ -20,8 +20,8 @@ class RecipeService {
     @Inject
     lateinit var em: EntityManager
 
-    fun getFeed(cursor: Long?, limit: Int): FeedResponse {
-        val results = recipeRepository.findPublicFeed(cursor, limit + 1)
+    fun getFeed(cursor: Long?, limit: Int, method: String? = null): FeedResponse {
+        val results = recipeRepository.findPublicFeed(cursor, limit + 1, method)
         val hasNext = results.size > limit
         val items = if (hasNext) results.dropLast(1) else results
         val nextCursor = if (hasNext) items.last().id else null
@@ -37,6 +37,7 @@ class RecipeService {
             this.memberId = memberId
             title = req.title
             description = req.description
+            method = req.method
             coffeeBean = req.coffeeBean
             origin = req.origin
             roastLevel = req.roastLevel
@@ -95,6 +96,7 @@ class RecipeService {
 
         recipe.title = req.title
         recipe.description = req.description
+        recipe.method = req.method
         recipe.coffeeBean = req.coffeeBean
         recipe.origin = req.origin
         recipe.roastLevel = req.roastLevel
@@ -228,6 +230,7 @@ class RecipeService {
             memberId = recipe.memberId,
             title = recipe.title,
             description = recipe.description,
+            method = recipe.method,
             coffeeBean = recipe.coffeeBean,
             origin = recipe.origin,
             roastLevel = recipe.roastLevel,

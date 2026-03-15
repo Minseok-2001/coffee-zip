@@ -26,6 +26,9 @@ class Recipe : PanacheEntityBase {
     @get:Column(columnDefinition = "TEXT")
     var description: String? = null
 
+    @get:Column(length = 50)
+    var method: String? = null
+
     @get:Column(name = "coffee_bean", length = 200)
     var coffeeBean: String? = null
 
