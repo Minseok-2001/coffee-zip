@@ -116,7 +116,7 @@ class AuthResource {
                     provider = userInfo.provider
                     providerId = userInfo.providerId
                     email = userInfo.email
-                    nickname = userInfo.nickname
+                    nickname = NicknameGenerator.generate()
                     profileImage = userInfo.profileImage
                 }
             entityManager.persist(newMember)
