@@ -38,6 +38,9 @@ class Recipe : PanacheEntityBase {
     @get:Column(name = "roast_level", length = 50)
     var roastLevel: String? = null
 
+    @get:Column(name = "bean_id")
+    var beanId: Long? = null
+
     @get:Column(length = 100)
     var grinder: String? = null
 

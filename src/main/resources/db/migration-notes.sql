@@ -1,0 +1,11 @@
+-- Bean Catalog Migration Notes
+-- These SQL statements are for MANUAL execution in production
+-- after the feat/bean-catalog branch is deployed.
+--
+-- Step 1: Deploy backend (adds bean_id column via Hibernate update mode)
+-- Step 2: Deploy frontend (uses bean_id instead of free-text fields)
+-- Step 3: After verifying frontend works, run these to clean up:
+
+-- ALTER TABLE recipe DROP COLUMN coffee_bean;   -- only after FE confirmed working
+-- ALTER TABLE recipe DROP COLUMN origin;         -- only after FE confirmed working
+-- ALTER TABLE recipe DROP COLUMN roast_level;    -- only after FE confirmed working
