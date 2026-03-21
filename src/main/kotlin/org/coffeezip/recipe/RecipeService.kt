@@ -7,6 +7,8 @@ import jakarta.transaction.Transactional
 import jakarta.ws.rs.WebApplicationException
 import org.coffeezip.bean.BeanService
 import org.coffeezip.dto.BeanSummaryResponse
+import org.coffeezip.dripper.DripperService
+import org.coffeezip.dto.DripperSummaryResponse
 import org.coffeezip.entity.Recipe
 import org.coffeezip.entity.RecipeComment
 import org.coffeezip.entity.RecipeLike
@@ -25,6 +27,9 @@ class RecipeService {
     @Inject
     lateinit var beanService: BeanService
 
+    @Inject
+    lateinit var dripperService: DripperService
+
     fun getFeed(cursor: Long?, limit: Int, method: String? = null): FeedResponse {
         val results = recipeRepository.findPublicFeed(cursor, limit + 1, method)
         val hasNext = results.size > limit
@@ -34,8 +39,12 @@ class RecipeService {
         val beanMap: Map<Long, BeanSummaryResponse> =
             if (beanIds.isEmpty()) emptyMap()
             else beanService.getBeanSummaries(beanIds)
+        val dripperIds = items.mapNotNull { it.dripperId }
+        val dripperMap: Map<Long, DripperSummaryResponse> =
+            if (dripperIds.isEmpty()) emptyMap()
+            else dripperService.getDripperSummaries(dripperIds)
         return FeedResponse(
-            items = items.map { toRecipeResponse(it, bean = beanMap[it.beanId]) },
+            items = items.map { toRecipeResponse(it, bean = beanMap[it.beanId], dripper = dripperMap[it.dripperId]) },
             nextCursor = nextCursor
         )
     }
@@ -51,6 +60,7 @@ class RecipeService {
             origin = req.origin
             roastLevel = req.roastLevel
             beanId = req.beanId
+            dripperId = req.dripperId
             grinder = req.grinder
             grindSize = req.grindSize
             coffeeGrams = req.coffeeGrams
@@ -84,6 +94,7 @@ class RecipeService {
 
         em.flush()
         val bean = req.beanId?.let { beanService.getBeanSummaries(listOf(it))[it] }
+        val dripper = req.dripperId?.let { dripperService.getDripperSummaries(listOf(it))[it] }
         return toRecipeResponse(recipe, req.steps.mapIndexed { _, stepReq ->
             RecipeStepResponse(
                 id = 0L,
@@ -92,13 +103,14 @@ class RecipeService {
                 duration = stepReq.duration,
                 waterAmount = stepReq.waterAmount
             )
-        }, req.tags, bean = bean)
+        }, req.tags, bean = bean, dripper = dripper)
     }
 
     fun getRecipe(id: Long): RecipeResponse {
         val recipe = em.find(Recipe::class.java, id) ?: throw WebApplicationException(404)
         val bean = recipe.beanId?.let { beanService.getBeanSummaries(listOf(it))[it] }
-        return toRecipeResponse(recipe, bean = bean)
+        val dripper = recipe.dripperId?.let { dripperService.getDripperSummaries(listOf(it))[it] }
+        return toRecipeResponse(recipe, bean = bean, dripper = dripper)
     }
 
     @Transactional
@@ -113,6 +125,7 @@ class RecipeService {
         recipe.origin = req.origin
         recipe.roastLevel = req.roastLevel
         recipe.beanId = req.beanId
+        recipe.dripperId = req.dripperId
         recipe.grinder = req.grinder
         recipe.grindSize = req.grindSize
         recipe.coffeeGrams = req.coffeeGrams
@@ -150,7 +163,8 @@ class RecipeService {
 
         em.flush()
         val bean = recipe.beanId?.let { beanService.getBeanSummaries(listOf(it))[it] }
-        return toRecipeResponse(recipe, bean = bean)
+        val dripper = recipe.dripperId?.let { dripperService.getDripperSummaries(listOf(it))[it] }
+        return toRecipeResponse(recipe, bean = bean, dripper = dripper)
     }
 
     @Transactional
@@ -226,14 +240,19 @@ class RecipeService {
         val beanMap: Map<Long, BeanSummaryResponse> =
             if (beanIds.isEmpty()) emptyMap()
             else beanService.getBeanSummaries(beanIds)
-        return recipes.map { toRecipeResponse(it, bean = beanMap[it.beanId]) }
+        val dripperIds = recipes.mapNotNull { it.dripperId }
+        val dripperMap: Map<Long, DripperSummaryResponse> =
+            if (dripperIds.isEmpty()) emptyMap()
+            else dripperService.getDripperSummaries(dripperIds)
+        return recipes.map { toRecipeResponse(it, bean = beanMap[it.beanId], dripper = dripperMap[it.dripperId]) }
     }
 
     private fun toRecipeResponse(
         recipe: Recipe,
         steps: List<RecipeStepResponse>? = null,
         tags: List<String>? = null,
-        bean: BeanSummaryResponse? = null
+        bean: BeanSummaryResponse? = null,
+        dripper: DripperSummaryResponse? = null
     ): RecipeResponse {
         val resolvedSteps = steps ?: recipeRepository.findStepsByRecipeId(recipe.id!!).map {
             RecipeStepResponse(
@@ -267,7 +286,9 @@ class RecipeService {
             createdAt = recipe.createdAt.toString(),
             updatedAt = recipe.updatedAt.toString(),
             beanId = recipe.beanId,
-            bean = bean
+            bean = bean,
+            dripperId = recipe.dripperId,
+            dripper = dripper
         )
     }
 
