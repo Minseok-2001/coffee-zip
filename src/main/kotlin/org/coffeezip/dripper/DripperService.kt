@@ -107,6 +107,7 @@ class DripperService {
         dripper.extractionSpeed = req.extractionSpeed
         dripper.description = req.description
         dripper.updatedAt = LocalDateTime.now()
+        em.flush()
 
         val reviews = repo.findReviewsByDripperId(id)
         return toDripperDetailResponse(dripper, reviews)
@@ -125,6 +126,7 @@ class DripperService {
             existing.durability = req.durability
             existing.heatRetention = req.heatRetention
             existing.updatedAt = LocalDateTime.now()
+            em.flush()
         } else {
             val review = DripperReview().apply {
                 this.dripperId = dripperId
@@ -149,8 +151,11 @@ class DripperService {
         em.remove(review)
     }
 
-    fun getReviews(dripperId: Long, page: Int, size: Int): List<DripperReviewResponse> =
-        repo.findReviewsByDripperIdPaged(dripperId, page, size).map { it.toResponse() }
+    fun getReviews(dripperId: Long, page: Int, size: Int): List<DripperReviewResponse> {
+        em.find(Dripper::class.java, dripperId)
+            ?: throw NotFoundException("Dripper not found")
+        return repo.findReviewsByDripperIdPaged(dripperId, page, size).map { it.toResponse() }
+    }
 
     private fun toDripperDetailResponse(dripper: Dripper, reviews: List<DripperReview>): DripperDetailResponse {
         val recipeCount = em.createQuery(
