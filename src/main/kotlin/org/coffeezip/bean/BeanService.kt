@@ -89,17 +89,20 @@ class BeanService {
         val bean = em.find(Bean::class.java, beanId)
             ?: throw NotFoundException("Bean not found: $beanId")
         if (bean.createdBy != memberId) throw jakarta.ws.rs.WebApplicationException(403)
+        // Required fields: null means "don't update"
         request.name?.let { bean.name = it }
         request.roastery?.let { bean.roastery = it }
         request.origin?.let { bean.origin = it }
-        request.region?.let { bean.region = it }
-        request.farm?.let { bean.farm = it }
-        request.variety?.let { bean.variety = it }
-        request.processing?.let { bean.processing = it }
         request.roastLevel?.let { bean.roastLevel = it }
-        request.altitude?.let { bean.altitude = it }
-        request.harvestYear?.let { bean.harvestYear = it }
-        request.description?.let { bean.description = it }
+        // Optional nullable fields: always apply — null clears the field
+        bean.region = request.region
+        bean.farm = request.farm
+        bean.variety = request.variety
+        bean.processing = request.processing
+        bean.altitude = request.altitude
+        bean.harvestYear = request.harvestYear
+        bean.description = request.description
+        // flavorNotes: null means "don't change the notes"; non-null replaces the set
         request.flavorNotes?.let { bean.flavorNotes = it.toMutableSet() }
         bean.updatedAt = LocalDateTime.now()
         em.flush()
@@ -192,7 +195,10 @@ class BeanService {
             flavorNotes = bean.flavorNotes.toList(),
             avgRating = avgRating,
             reviewCount = reviewCount,
-            recipeCount = 0,
+            recipeCount = (em.createQuery(
+                "SELECT COUNT(r) FROM Recipe r WHERE r.beanId = :beanId",
+                Long::class.java
+            ).setParameter("beanId", beanId).singleResult).toInt(),
             avgAcidity = if (acidityValues.isEmpty()) null else acidityValues.average(),
             avgSweetness = if (sweetnessValues.isEmpty()) null else sweetnessValues.average(),
             avgBody = if (bodyValues.isEmpty()) null else bodyValues.average(),
