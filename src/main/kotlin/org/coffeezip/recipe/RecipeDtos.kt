@@ -1,5 +1,7 @@
 package org.coffeezip.recipe
 
+import org.coffeezip.dto.BeanSummaryResponse
+
 data class RecipeStepRequest(
     val stepOrder: Int,
     val label: String,
@@ -22,7 +24,8 @@ data class CreateRecipeRequest(
     val targetYield: Int?,
     val isPublic: Boolean = true,
     val steps: List<RecipeStepRequest> = emptyList(),
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val beanId: Long? = null
 )
 
 data class UpdateRecipeRequest(
@@ -40,7 +43,8 @@ data class UpdateRecipeRequest(
     val targetYield: Int?,
     val isPublic: Boolean = true,
     val steps: List<RecipeStepRequest> = emptyList(),
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val beanId: Long? = null
 )
 
 data class RecipeStepResponse(
@@ -71,7 +75,9 @@ data class RecipeResponse(
     val steps: List<RecipeStepResponse>,
     val tags: List<String>,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val beanId: Long? = null,
+    val bean: BeanSummaryResponse? = null
 )
 
 data class FeedResponse(
