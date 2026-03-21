@@ -17,7 +17,7 @@ import org.coffeezip.dto.CreateBeanRequest
 import org.coffeezip.dto.UpdateBeanRequest
 import org.coffeezip.dto.UpsertBeanReviewRequest
 
-@Path("/api/beans")
+@Path("/beans")
 @ApplicationScoped
 class BeanResource {
 
