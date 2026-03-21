@@ -54,3 +54,39 @@ ALTER TABLE recipe ADD COLUMN IF NOT EXISTS bean_id BIGINT;
 -- ALTER TABLE recipe DROP COLUMN coffee_bean;   -- only after FE confirmed working
 -- ALTER TABLE recipe DROP COLUMN origin;         -- only after FE confirmed working
 -- ALTER TABLE recipe DROP COLUMN roast_level;    -- only after FE confirmed working
+
+-- ==========================================
+-- Phase 2: Dripper Catalog
+-- ==========================================
+
+-- Forward DDL (run before deploy)
+CREATE TABLE dripper (
+    id               BIGSERIAL PRIMARY KEY,
+    name             VARCHAR(255) NOT NULL,
+    brand            VARCHAR(255) NOT NULL,
+    type             VARCHAR(50)  NOT NULL,
+    material         VARCHAR(50)  NOT NULL,
+    holes_count      INT,
+    extraction_speed VARCHAR(20),
+    description      TEXT,
+    created_by       BIGINT       NOT NULL,
+    created_at       TIMESTAMP    NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE dripper_review (
+    id              BIGSERIAL PRIMARY KEY,
+    dripper_id      BIGINT    NOT NULL,
+    member_id       BIGINT    NOT NULL,
+    rating          INT       NOT NULL,
+    content         TEXT,
+    extraction_rate INT,
+    cleanability    INT,
+    durability      INT,
+    heat_retention  INT,
+    created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (dripper_id, member_id)
+);
+
+ALTER TABLE recipe ADD COLUMN IF NOT EXISTS dripper_id BIGINT;
