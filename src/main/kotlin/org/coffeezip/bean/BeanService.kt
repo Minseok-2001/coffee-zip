@@ -198,7 +198,7 @@ class BeanService {
             recipeCount = (em.createQuery(
                 "SELECT COUNT(r) FROM Recipe r WHERE r.beanId = :beanId",
                 Long::class.java
-            ).setParameter("beanId", beanId).singleResult).toInt(),
+            ).setParameter("beanId", bean.id!!).singleResult).toInt(),
             avgAcidity = if (acidityValues.isEmpty()) null else acidityValues.average(),
             avgSweetness = if (sweetnessValues.isEmpty()) null else sweetnessValues.average(),
             avgBody = if (bodyValues.isEmpty()) null else bodyValues.average(),
